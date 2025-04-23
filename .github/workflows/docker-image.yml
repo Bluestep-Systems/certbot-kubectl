@@ -1,0 +1,48 @@
+name: Build and Push Docker certbot and kubectl Image CI
+
+on: 
+  workflow_dispatch:
+  release:
+    types:
+      - published
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      TAG: ${{ github.event.release.tag_name || 'latest' }}
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Use these credientials because we're pushing the tag below to the GitHub Container Registry
+      - name: Log in to GitHub Container Registry using our credentials
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 #hash for v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+  
+      - name: Build and push with cache
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: .Dockerfile
+          build-args: |
+            VERSION=${{ env.TAG  }}
+          push: true
+          tags: |
+            ghcr.io/bluestep-systems/certbot-kubectl:${{  github.ref_name }}
+            ghcr.io/bluestep-systems/certbot-kubectl:latest
+          cache-from: type=gha
+          cache-to: type=gha
