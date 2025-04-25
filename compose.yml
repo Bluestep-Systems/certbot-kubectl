@@ -4,8 +4,6 @@ services:
       context: .
       dockerfile: Dockerfile
       tags:
-      - certbot-kubectl:latest
-      - certbot-kubectl:1.0.0
       - ghcr.io/bluestep-systems/certbot-kubectl:latest
       - ghcr.io/bluestep-systems/certbot-kubectl:1.0.0
-    image: certbot-kubectl
+    image: ghcr.io/bluestep-systems/certbot-kubectl:latest
